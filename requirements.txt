@@ -1,0 +1,13 @@
+pydantic~=1.10.12
+loguru~=0.7.2
+toml~=0.10.2
+charset_normalizer
+creart~=0.3.0
+sqlalchemy~=2.0.20
+aiohttp~=3.8.5
+aiocqhttp~=1.4.4
+graia-ariadne
+requests~=2.31.0
+pycryptodome
+beautifulsoup4~=4.12.2
+lxml~=4.9.3

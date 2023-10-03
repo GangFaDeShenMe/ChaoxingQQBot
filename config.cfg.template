@@ -1,0 +1,19 @@
+[mirai]
+qq = 
+manager_qq = 
+
+reverse_ws_port = 8554
+# mirai api http 反向连接模式
+# api_key = "1234567890"
+reverse_ws_host = "127.0.0.1"
+
+[db]
+sqlalchemy_db_url = "sqlite:///xxt.db"
+
+[system]
+web_requests_latency = 0.5
+reply_latency = 1
+
+[respond]
+new_user_message = "欢迎新用户使用。本程序具有这些功能：\n..."
+
