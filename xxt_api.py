@@ -137,14 +137,16 @@ async def xxt_get_course_activities(course: Course, user: User) -> list[SignInAc
         course_activities = []
 
         for activity_dict in course_activities_raw:
-            course_activities.append(await package_activity_info(activity_dict, cookies))
+            activity = await package_activity_info(activity_dict, cookies)
+            # 若用户已经签到（attend_info["data"]["status"] != 0），就对这个用户丢弃这个活动
+            if activity:
+                course_activities.append(activity)
     except Exception as e:
         raise Exception(f"无法格式化取得的活动列表: {e}")
     return course_activities
 
 
 async def get_activity_info(activity: SignInActivity, cookies: RequestsCookieJar):
-
     return requests.get(
         url="https://mobilelearn.chaoxing.com/v2/apis/active/getPPTActiveInfo",
         params={
@@ -155,7 +157,7 @@ async def get_activity_info(activity: SignInActivity, cookies: RequestsCookieJar
     )
 
 
-async def package_activity_info(activity_dict: dict, cookies: RequestsCookieJar) -> SignInActivity:
+async def package_activity_info(activity_dict: dict, cookies: RequestsCookieJar) -> SignInActivity | None:
     def get_sign_type(other_id):
         types = {
             '0': '普通签到',
@@ -166,6 +168,7 @@ async def package_activity_info(activity_dict: dict, cookies: RequestsCookieJar)
             '5': '签到码签到',
         }
         return types.get(str(other_id), '未知签到类型')
+
     activity = SignInActivity(
         name=activity_dict["nameOne"],
         type_name=get_sign_type(activity_dict["otherId"]),
@@ -196,7 +199,16 @@ async def package_activity_info(activity_dict: dict, cookies: RequestsCookieJar)
         activity.require_location = True
         activity.type_name += "[需位置]"
 
-    return activity
+    await asyncio.sleep(c.system.web_requests_lantency)
+    attend_info = json.loads(
+        requests.get(
+            url=f"https://mobilelearn.chaoxing.com/v2/apis/sign/getAttendInfo?activeId={activity.active_id}",
+            cookies=cookies,
+            headers=c.xxt_api.request_user_agent_android_app
+        ).text
+    )
+
+    return activity if attend_info["data"]["status"] == 0 else None
 
 
 async def xxt_get_cookies_by_phone_password_login(phone: str, password: str) -> RequestsCookieJar:
@@ -405,7 +417,8 @@ async def validate_cookies(cookies_raw: str | RequestsCookieJar | None, phone_nu
 async def xxt_sign_in(activity: SignInActivity, user: User) -> bool:
     result = requests.get(
         url=f"https://mobilelearn.chaoxing.com/v2/apis/sign/signIn?activeId={activity.active_id}",
-        cookies=await validate_cookies(phone_number=user.phone_number, password=user.password, cookies_raw=user.cookies),
+        cookies=await validate_cookies(phone_number=user.phone_number, password=user.password,
+                                       cookies_raw=user.cookies),
         headers=c.xxt_api.request_user_agent_android_app
     )
 

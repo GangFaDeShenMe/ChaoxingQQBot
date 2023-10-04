@@ -197,7 +197,7 @@ def get_activity(active_id: str = None, id: int = None) -> SignInActivity | None
     return activity
 
 
-def update_activity(activity: SignInActivity, course: Course, user: User) -> bool:
+def update_sign_in_activity(activity: SignInActivity, course: Course, user: User) -> bool:
     try:
         # 查找数据库中是否有相应的activity
         existing_activity = get_activity(active_id=activity.active_id)
@@ -228,7 +228,7 @@ def create_sign_in_activity(activity: SignInActivity, course: Course, user: User
         # add the sign in activity to the session
 
         activity.course = [course]
-        activity.user = [user]
+        activity.users = [user]
 
         s.add(activity)
         # commit the transaction

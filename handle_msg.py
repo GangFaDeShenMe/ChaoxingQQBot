@@ -182,7 +182,7 @@ async def check_course_activity(_respond: Callable, qq_num: str, message: str,
                 existing_activity.location_range = activity.location_range
 
                 l.debug("数据库内已有活动，尝试更新")
-                db.update_activity(existing_activity, course, user)
+                db.update_sign_in_activity(existing_activity, course, user)
             else:
                 l.debug("在数据库内新建活动")
                 db.create_sign_in_activity(activity, course, user)
@@ -198,7 +198,7 @@ async def check_course_activity(_respond: Callable, qq_num: str, message: str,
                 [f"{idx + 1}. {activity.name}: {activity.type_name}, ID: {activity.id}, [{activity.start_time}-{'教师手动结束' if activity.end_time is None else activity.end_time}]" for idx, activity in
                  enumerate(sorted_activities)])
 
-    await _respond(f"当前 {course.name} 课程活动有 {len(course_activities_list)} 个\n {respond_text}")
+    await _respond(f"当前 {course.name} 课程活动有 {len(course_activities_list)} 个\n{respond_text}")
 
 
 async def handle_message(_respond: Callable, qq_num: str, message: str,
